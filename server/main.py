@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from .wermodels.alarm import Alarm
+from .models.alarm import Alarm
 import json
 
 app = FastAPI()
