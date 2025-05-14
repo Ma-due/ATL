@@ -3,8 +3,6 @@ import os
 
 load_dotenv()
 
-# 서버 URL, 기본값은 로컬 테스트용
-SERVER_URL = os.getenv("SERVER_URL", "http://localhost:8000")
 # API 인증 토큰
 API_TOKEN = os.getenv("API_TOKEN", "your-secret-token")
 # Agent 실행 포트
