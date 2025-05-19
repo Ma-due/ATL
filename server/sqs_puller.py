@@ -1,7 +1,7 @@
 import boto3
 import json
 import requests
-from models.alarm import Alarm
+from server.models.models import Alarm
 from config import AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, AWS_SQS_QUEUE_URL, FASTAPI_HOST, FASTAPI_PORT
 
 # SQS 클라이언트 초기화

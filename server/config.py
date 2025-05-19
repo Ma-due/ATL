@@ -10,6 +10,8 @@ AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
 AWS_SQS_QUEUE_URL = os.getenv("AWS_SQS_QUEUE_URL", "")
 
 # FastAPI 설정
-#FASTAPI_HOST = os.getenv("FASTAPI_HOST", "localhost")
-#FASTAPI_PORT = int(os.getenv("FASTAPI_PORT", 8000))
-#API_TOKEN = os.getenv("API_TOKEN", "your-secret-token")
+FASTAPI_HOST = os.getenv("FASTAPI_HOST", "localhost")
+FASTAPI_PORT = int(os.getenv("FASTAPI_PORT", 8000))
+API_TOKEN = os.getenv("API_TOKEN", "your-secret-token")
+
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")

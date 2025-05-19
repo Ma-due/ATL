@@ -1,7 +1,7 @@
 import subprocess
-from typing import Dict
+from typing import Dict, List
 
-def execute_command(command: str, timeout: int = 30) -> Dict[str, str | int]:
+def execute_command(command: List[str], timeout: int = 30) -> Dict[str, str | int]:
     """
     subprocess.run을 사용해 커맨드를 실행하고 결과를 반환
     Args:
@@ -10,20 +10,25 @@ def execute_command(command: str, timeout: int = 30) -> Dict[str, str | int]:
     Returns:
         stdout, stderr, returncode 또는 에러 메시지를 포함한 딕셔너리
     """
-    try:
-        result = subprocess.run(
-            command,
-            shell=True,  # 주의: 화이트리스트 검증 필수
-            capture_output=True,
-            text=True,
-            timeout=timeout
-        )
-        return {
-            "stdout": result.stdout,
-            "stderr": result.stderr,
-            "returncode": result.returncode
-        }
-    except subprocess.TimeoutExpired:
-        return {"error": f"'{command}' 커맨드가 {timeout}초 후 타임아웃"}
-    except subprocess.SubprocessError as e:
-        return {"error": f"subprocess 에러: {str(e)}"}
+
+    results: Dict[str, str | int] = []
+    for cmd in command:
+        try:
+            result = subprocess.run(
+                cmd,
+                shell=True,  # 주의: 화이트리스트 검증 필수
+                capture_output=True,
+                text=True,
+                timeout=timeout
+            )
+            results.append({
+                "command": cmd,
+                "stdout": result.stdout,
+                "returncode": result.returncode
+            })
+
+        except subprocess.TimeoutExpired:
+            results.append({"command": cmd, "stderr": f"{timeout}s timeout", "returncode": 1})
+        except subprocess.SubprocessError as e:
+            results.append({"command": cmd, "stderr": {str(e)}, "returncode": 1})
+    return results
