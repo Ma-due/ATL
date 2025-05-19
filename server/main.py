@@ -6,25 +6,26 @@ from server.config import API_TOKEN
 from server.workflow.state import AgentState
 from server.workflow.builder import build_workflow
 from typing import List, Dict
-
+from server.utils.logging import setup_logger
 
 app = FastAPI()
 cloudwatch_messages: List[Dict] = []
+logger = setup_logger(__name__)
+
 
 def sqs_trigger(alarm: Alarm):
     """CloudWatch SQS 메시지 처리."""
     workflow = build_workflow()
     initial_state = AgentState(
-        workflow_id=str(uuid.uuid4()),
         input_type="cloudwatch",
         raw_input=alarm.dict(),
-        parsed_input={},
-        messages=[],
         command=None,
-        should_execute=None,
-        approved=None,
+        target=None,
+        approved=True,
         execution_result=None,
-        feedback_data=None
+        final_answer=None,
+        chat_history=[],
+        intent=None
     )
     
     cloudwatch_messages.append(workflow.invoke(initial_state))
@@ -39,23 +40,25 @@ def get_commands() -> List[Dict]:
     return cloudwatch_messages
 
 @app.post("/chat")
-def handle_chat(request):
+def handle_chat(request:Dict):
     """Streamlit 사용자 입력 처리."""
+    logger.info(f"Received request: {request}")
     user_input = request.get("message")
     workflow = build_workflow()
     initial_state = AgentState(
         input_type="streamlit",
-        raw_input={"text": user_input},
-        parsed_input={},
-        messages=[],
+        raw_input={"user_input": user_input},
         command=None,
-        should_execute=None,
-        approved=None,
+        target=None,
+        approved=False,
         execution_result=None,
-        feedback_data=None
+        final_answer=None,
+        chat_history=[],
+        intent=None
     )
     result = workflow.invoke(initial_state)
-    return result["messages"]
+    logger.info(f"Result: {result}")
+    return result["final_answer"]
 
 @app.post("/execute")
 def handle_execute(request: ExecuteRequest):

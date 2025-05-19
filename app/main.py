@@ -1,7 +1,11 @@
 import streamlit as st
 import requests
 from config import FASTAPI_HOST, FASTAPI_PORT
+import sys
+import os
 
+
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 # FastAPI URL
 chat_url = f"http://{FASTAPI_HOST}:{FASTAPI_PORT}/chat"
 
@@ -30,9 +34,10 @@ if user_question := st.chat_input(placeholder="질문 내용 입력"):
 
     with st.spinner("답변을 생성하는 중"):
         try:
+            print(f"Sending request to server: {user_question}")
             response = requests.post(chat_url, json={"message": user_question})
             response.raise_for_status()
-            ai_message = response.json().get("response", "Error: No response from server")
+            ai_message = response.json()
         except requests.RequestException as e:
             ai_message = f"Error: Failed to get response ({e})"
         with st.chat_message("ai"):
