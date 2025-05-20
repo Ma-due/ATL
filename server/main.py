@@ -61,7 +61,7 @@ def handle_chat(request:Dict):
     return result["final_answer"]
 
 @app.post("/execute", response_model=List[ExecuteResponse])
-def handle_execute(request: ExecuteRequest) -> List[ExecuteResponse]:
+def handle_execute(request: Dict) -> List[ExecuteResponse]:
     """Agent의 /execute API 호출로 커맨드 실행.
     
     Args:
@@ -69,9 +69,12 @@ def handle_execute(request: ExecuteRequest) -> List[ExecuteResponse]:
     Returns:
         실행 결과 리스트
     """
-    commands = request.command
-    agent = request.agent
 
+    commands = request.get("command")
+    target = request.get("agent")
+    url = request.get("url")
+    logger.info(f"commands: {commands}, target: {target}, url: {url}")
+    
     if not commands:
         logger.warning("No command provided in request")
         return [ExecuteResponse(
@@ -83,10 +86,12 @@ def handle_execute(request: ExecuteRequest) -> List[ExecuteResponse]:
 
     try:
         headers = {"Authorization": f"Bearer {API_TOKEN}"}
-        payload = {"command": commands, "agent": agent}
-        logger.info(f"Sending request to {agent}:9917/execute with command: {commands}")
-        response = requests.post(f"http://{agent}:9917/execute", json=payload, headers=headers)
+        payload = ExecuteRequest(command=commands, agent=target)
+        logger.info(f"Sending request to {url}:9917/execute with command: {commands}")
+        response = requests.post(f"http://{url}:9917/execute", json=payload.dict(), headers=headers)
         response.raise_for_status()
+
+        logger.info(f"Response: {response.json()}")
         
         # 응답이 List[ExecuteResponse]와 호환되는지 확인
         results = response.json()
