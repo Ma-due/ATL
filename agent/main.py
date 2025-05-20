@@ -5,6 +5,7 @@ from .config import API_TOKEN, AGENT_PORT
 import uvicorn
 from .models.models import ExecuteRequest, ExecuteResponse
 from .logging import setup_logger
+from typing import List
 
 logger = setup_logger(__name__)
 
@@ -13,7 +14,7 @@ app = FastAPI()
 
 @app.post("/execute", response_model=ExecuteResponse)
 def execute_command_endpoint(request: ExecuteRequest, 
-                             authorization: str = Header(default="")) -> ExecuteResponse:
+                             authorization: str = Header(default="")) -> List[ExecuteResponse]:
     """
     서버로부터 커맨드를 수신하고 실행
     Args:

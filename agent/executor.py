@@ -1,10 +1,11 @@
 import subprocess
 from typing import Dict, List
 from .logging import setup_logger
+from .models.models import ExecuteResponse
 
 logger = setup_logger(__name__)
 
-def execute_command(command: List[str], timeout: int = 30) -> List[Dict[str, str | int]]:
+def execute_command(command: List[str], timeout: int = 30) -> List[ExecuteResponse]:
     """
     subprocess.run을 사용해 커맨드를 실행하고 결과를 반환
     Args:
@@ -14,7 +15,7 @@ def execute_command(command: List[str], timeout: int = 30) -> List[Dict[str, str
         stdout, stderr, returncode 또는 에러 메시지를 포함한 딕셔너리
     """
 
-    results: List[Dict[str, str | int]] = []
+    results: List[ExecuteResponse] = []
     for cmd in command:
         logger.info(f"executor input command: {cmd}")
         try:
@@ -25,16 +26,25 @@ def execute_command(command: List[str], timeout: int = 30) -> List[Dict[str, str
                 text=True,
                 timeout=timeout
             )
-            results.append({
-                "command": cmd,
-                "stdout": result.stdout,
-                "returncode": result.returncode
-            })
+            results.append(ExecuteResponse(
+                command=cmd,
+                stdout=result.stdout,
+                returncode=result.returncode
+            ))
 
+            logger.info(f"executor output: {result.stdout}, return code:{result.returncode}")
         except subprocess.TimeoutExpired:
-            results.append({"command": cmd, "stderr": f"{timeout}s timeout", "returncode": 1})
+            logger.info(f"executor timeout: {cmd}")
+            results.append(ExecuteResponse(
+                command=cmd,
+                stderr=f"{timeout}s timeout",
+                returncode=1
+            ))
         except subprocess.SubprocessError as e:
-            results.append({"command": cmd, "stderr": {str(e)}, "returncode": 1})
+            logger.info(f"executor error: {cmd}")
+            results.append(ExecuteResponse(
+                command=cmd,
+                stderr=str(e),
+                returncode=1))
 
-        logger.info(f"executor output: {results}")
     return results

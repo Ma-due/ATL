@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException
-from .models.models import Alarm, ExecuteRequest
+from .models.models import Alarm, ExecuteRequest, ExecuteResponse
 import requests
 import uuid
 from server.config import API_TOKEN
@@ -60,23 +60,56 @@ def handle_chat(request:Dict):
     logger.info(f"Result: {result}")
     return result["final_answer"]
 
-@app.post("/execute")
-def handle_execute(request: ExecuteRequest):
-    """Agent의 /execute API 호출로 커맨드 실행."""
+@app.post("/execute", response_model=List[ExecuteResponse])
+def handle_execute(request: ExecuteRequest) -> List[ExecuteResponse]:
+    """Agent의 /execute API 호출로 커맨드 실행.
+    
+    Args:
+        request: 명령어와 에이전트 정보 포함
+    Returns:
+        실행 결과 리스트
+    """
     commands = request.command
     agent = request.agent
 
     if not commands:
-        return {"error": "No command to execute"}
+        logger.warning("No command provided in request")
+        return [ExecuteResponse(
+            command="",
+            stdout=None,
+            stderr="No command to execute",
+            returncode=1
+        )]
 
     try:
         headers = {"Authorization": f"Bearer {API_TOKEN}"}
         payload = {"command": commands, "agent": agent}
-        response = requests.post(f"{agent}:9917/execute", json=payload, headers=headers)
+        logger.info(f"Sending request to {agent}:9917/execute with command: {commands}")
+        response = requests.post(f"http://{agent}:9917/execute", json=payload, headers=headers)
         response.raise_for_status()
-        return {"results": response.json()}
+        
+        # 응답이 List[ExecuteResponse]와 호환되는지 확인
+        results = response.json()
+        if not isinstance(results, list):
+            logger.error(f"Expected list response, got: {type(results)}")
+            return [ExecuteResponse(
+                command=" ".join(commands) if commands else "",
+                stdout=None,
+                stderr="Invalid response format from agent",
+                returncode=1
+            )]
+        
+        # Pydantic 모델로 변환
+        return [ExecuteResponse(**result) for result in results]
+    
     except requests.RequestException as e:
-        return {"error": str(e)}
+        logger.error(f"Request to agent failed: {str(e)}")
+        return [ExecuteResponse(
+            command=" ".join(commands) if commands else "",
+            stdout=None,
+            stderr=f"Request failed: {str(e)}",
+            returncode=1
+        )]
 
 @app.get("/test/inject_message")
 def inject_test_message():
