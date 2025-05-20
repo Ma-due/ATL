@@ -12,6 +12,7 @@ def analyze(state: AgentState) -> Dict:
     target = state.get("target")
     input_type = state.get("input_type")
     intent = state.get("intent")
+    approved = state.get("approved")
 
     if not execution_result or not results:
         state["final_answer"] = {"response": "분석할 실행 결과가 없음"}
@@ -19,14 +20,18 @@ def analyze(state: AgentState) -> Dict:
 
     client = get_llm()
     prompt = f"""
-    다음 정보를 기반으로 실행 결과를 예쁘게 포맷팅하고 시스템 상태를 요약:
+    다음 정보를 기반으로 실행 결과를 예쁘게 포맷팅하고 시스템 상태를 요약하세요.
+    만약 approved 값이 False이면, 실행에 대한 여부를 승인받으세요:
+
     커맨드: {json.dumps(commands)}
-    의도: {intent if intent else '지정되지 않음'}
-    실행 결과: {json.dumps(results)}
-    대상 인스턴스: {target if target else '지정되지 않음'}
+    의도: {intent}
+    실행 결과: {json.dumps(execution_result)}
+    대상 인스턴스: {target}
     입력 유형: {input_type}
+    사용자 승인: {approved}
     - 결과를 읽기 쉽게 정리 (예: 커맨드별 출력, 성공/실패 상태, 의도 포함).
     - 시스템 상태 요약 (예: CPU 사용량, 디스크 상태, 문제 여부).
+    - approved가 False이면 summary 마지막 줄에 "실행하시겠습니까? (Y/N)" 포함.
     반환: {{"formatted_output": "정리된 결과", "summary": "상태 요약"}}
     """
 

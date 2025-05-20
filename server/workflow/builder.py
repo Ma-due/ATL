@@ -38,7 +38,7 @@ def build_workflow() -> StateGraph:
     # generate 조건부 엣지
     workflow.add_conditional_edges(
         "generate",
-        lambda state: state.get("next", "end"),
+        lambda state: state.get("next", END),
         {
             "execute": "execute",
             "end": END
