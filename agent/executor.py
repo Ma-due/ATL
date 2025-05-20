@@ -1,5 +1,8 @@
 import subprocess
 from typing import Dict, List
+from logging import setup_logger
+
+logger = setup_logger(__name__)
 
 def execute_command(command: List[str], timeout: int = 30) -> Dict[str, str | int]:
     """
@@ -13,6 +16,7 @@ def execute_command(command: List[str], timeout: int = 30) -> Dict[str, str | in
 
     results: Dict[str, str | int] = []
     for cmd in command:
+        logger.info(f"executor input command: {cmd}")
         try:
             result = subprocess.run(
                 cmd,
@@ -31,4 +35,6 @@ def execute_command(command: List[str], timeout: int = 30) -> Dict[str, str | in
             results.append({"command": cmd, "stderr": f"{timeout}s timeout", "returncode": 1})
         except subprocess.SubprocessError as e:
             results.append({"command": cmd, "stderr": {str(e)}, "returncode": 1})
+
+        logger.info(f"executor output: {results}")
     return results

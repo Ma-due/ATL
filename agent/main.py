@@ -5,7 +5,9 @@ from error_handler import handle_execution_error
 from config import API_TOKEN, AGENT_PORT
 import uvicorn
 from models.models import ExecuteRequest, ExecuteResponse
+from logging import setup_logger
 
+logger = setup_logger(__name__)
 
 app = FastAPI()
 
@@ -31,6 +33,7 @@ def execute_command_endpoint(request: ExecuteRequest,
         raise HTTPException(status_code=403, detail="허용되지 않은 커맨드")
     
     # 커맨드 실행
+    logger.info(f"main input command: {request.command}")
     result = execute_command(request.command)
     # ExecuteResponse로 반환
     return result
