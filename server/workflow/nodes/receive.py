@@ -38,7 +38,15 @@ def check_input(state: AgentState) -> Optional[Dict]:
             model="gpt-4o-mini",
             messages=[{"role": "user", "content": prompt}]
         )
-        result = json.loads(response.choices[0].message.content)
+        
+        # LLM 응답 안전하게 처리
+        content = response.choices[0].message.content.strip()
+        try:
+            # JSON 형식 응답 파싱 시도
+            result = json.loads(content)
+        except json.JSONDecodeError:
+            result = {"action": "path"}
+            
         logger.debug(f"LLM response: {result}")
 
         # 응답 검증
@@ -70,7 +78,6 @@ def check_input(state: AgentState) -> Optional[Dict]:
 
 def receive(state: AgentState) -> Dict:
     """LLM이 bind_tools를 사용하여 Streamlit 입력의 요청 유형을 결정."""
-    logger.info(f"Receive state: {state}")
     input_type = state.get("input_type")
     raw_input = state.get("raw_input", {})
 
@@ -89,36 +96,48 @@ def receive(state: AgentState) -> Dict:
 
     client = get_llm()
     prompt = f"""
-    사용자 입력의 요청 유형을 결정:
-    입력: {json.dumps(raw_input)}
-    호출:
-    - fetch: cloudwatch_messages 조회.
-    - generate: 커맨드/대화 생성.
+        사용자 입력의 요청 유형을 결정:
+        입력: {json.dumps(raw_input, ensure_ascii=False)}
+        대화 기록: {json.dumps(state["chat_history"], indent=2, ensure_ascii=False)}
+        호출:
+        - fetch: 클라우드워치 메시지, 알람, 모니터링 데이터 조회 (예: '클라우드워치 알람 보기').
+        - generate: 리눅스 명령어, 시스템 상태 질문, 일반 대화 응답 생성 (예: 'ls -l', 'CPU 사용률 확인').
+        지침:
+        - 'cloudwatch', '알람', '로그', '메시지' 포함 시 'fetch' 선택.
+        - EC2 인스턴스 ID (i-[0-9a-f]{17}) 포함 또는 CPU, 메모리, 디스크 상태 질문 시 'generate' 선택.
+        반환에는 아무런 텍스트도 포함시키지 말고 Plain Text으로 반환하세요.
+        반환: function_name
+        예시:
+        - "클라우드워치 알람 보기" → fetch
+        - "ls -l" → generate
+        - "i-08fb8abe21e6fa058 CPU 사용률 확인" → generate
+        - "서버 메모리 상태 어때?" → generate
     """
 
     functions = [
         {
             "name": "fetch",
-            "description": "사용자의 요청에 따라 최근 cloudwatch_messages 내역을 조회합니다.",
+            "description": "클라우드워치 메시지, 알람, 모니터링 데이터를 조회합니다 (예: '클라우드워치 알람 보기', '로그 보기').",
             "parameters": {}
         },
         {
             "name": "generate",
-            "description": "사용자의 요청에 따라 리눅스 커맨드 또는 대화 응답을 생성합니다.",
+            "description": "리눅스 명령어나 시스템 상태 질문에 대한 응답을 생성합니다 (예: 'ls -l', '디스크 공간 확인', 'CPU 사용률 확인', 'i-08fb8abe21e6fa058 CPU 사용률').",
             "parameters": {}
         }
     ]
 
     try:
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-4o",
             messages=[{"role": "user", "content": prompt}],
             functions=functions,
             function_call="auto"
         )
-        func = response.choices[0].message.function_call
+        logger.info(f"recive function call response: {response}")
+        func = response.choices[0].message.content.strip()
         logger.info(f"function_call: {func}")
-        return {"next": "fetch" if func and func.name == "fetch" else "generate"}
+        return {"next": func}
     except Exception:
         logger.info("function_call error return: next -> end")
         return {"next": "end"}

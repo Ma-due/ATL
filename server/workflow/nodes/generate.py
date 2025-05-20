@@ -1,4 +1,3 @@
-# server/workflow/nodes/generate.py
 from server.workflow.state import AgentState
 from server.utils.llm import get_llm
 import json
@@ -56,15 +55,46 @@ def generate(state: AgentState) -> Dict:
         state["target"] = result["target"]
         state["intent"] = result["intent"]
         logger.info(f"generate Final result: {state}")
+
+        # 상태 업데이트 반환
+        state_update = {
+            "command": state["command"],
+            "target": state["target"],
+            "intent": state["intent"]
+        }
+
         if not state["command"] or len(state["command"]) == 0:
-            state["final_answer"] = "커맨드를 생성하지 못했습니다."
-            return {"next": "end"}
+            state["final_answer"] = "커맨드를 생성할 수 없습니다."
+            state["chat_history"] = state.get("chat_history", []) + [{
+                "user": {"content": raw_input.get("user_input", "")},
+                "assistant": {"content": state["final_answer"]}
+            }]
+            state_update["final_answer"] = state["final_answer"]
+            state_update["chat_history"] = state["chat_history"]
+            logger.info(f"generate end state: {state}")
+            return {**state_update, "next": "end"}
 
         if approved:
-            return {"next": "execute"}
+            return {**state_update, "next": "execute"}
         else:
             state["final_answer"] = "사용자가 실행을 거부하셨습니다. 추가적인 도움이 필요하신가요?"
-            return {"next": "end"}
+            state["chat_history"] = state.get("chat_history", []) + [{
+                "user": {"content": raw_input.get("user_input", "")},
+                "assistant": {"content": state["final_answer"]}
+            }]
+            state_update["final_answer"] = state["final_answer"]
+            state_update["chat_history"] = state["chat_history"]
+            logger.info(f"generate end state: {state}")
+            return {**state_update, "next": "end"}
     except Exception as e:
         state["final_answer"] = f"커맨드 생성 실패: {str(e)}"
-        return {"next": "end"}
+        state["chat_history"] = state.get("chat_history", []) + [{
+            "user": {"content": raw_input.get("user_input", "")},
+            "assistant": {"content": state["final_answer"]}
+        }]
+        state_update = {
+            "final_answer": state["final_answer"],
+            "chat_history": state["chat_history"]
+        }
+        logger.error(f"generate failed: {str(e)}")
+        return {**state_update, "next": "end"}

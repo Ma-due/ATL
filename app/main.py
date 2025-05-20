@@ -12,18 +12,7 @@ st.caption("EC2 모니터링 챗봇")
 if 'session_history' not in st.session_state:
     st.session_state.session_history = []
 
-# 채팅창
-chat_placeholder = st.empty()
-with chat_placeholder.container():
-    for entry in st.session_state.session_history:
-        with st.chat_message("user"):
-            st.write(entry["user_messages"])
-        with st.chat_message("ai"):
-            final_answer = entry.get("final_answer", {})
-            response = final_answer.get("response", "No response")
-            if "error" in final_answer:
-                response = final_answer["error"]
-            st.write(response)
+print(f"session_history: {st.session_state.session_history}")
 
 # 사용자 입력 처리
 if user_question := st.chat_input(placeholder="질문 내용 입력"):
@@ -41,10 +30,7 @@ if user_question := st.chat_input(placeholder="질문 내용 입력"):
 
         # AI 응답 표시
         with st.chat_message("ai"):
-            response_text = ai_message.get("response", "No response")
-            if "error" in ai_message:
-                response_text = ai_message["error"]
-            st.write(response_text)
+            st.write(ai_message)
 
         # session_history에 딕셔너리 형태로 추가
         st.session_state.session_history.append(
@@ -53,7 +39,7 @@ if user_question := st.chat_input(placeholder="질문 내용 입력"):
                     "content": user_question,
                 },
                 "assistant": {
-                    "content": response_text,
+                    "content": ai_message,
                 },
             },
         )

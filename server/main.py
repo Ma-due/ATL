@@ -1,7 +1,6 @@
 from fastapi import FastAPI, HTTPException
-from .models.models import Alarm, ExecuteRequest, ExecuteResponse
+from server.models.models import Alarm, ExecuteRequest, ExecuteResponse
 import requests
-import uuid
 from server.config import API_TOKEN
 from server.workflow.state import AgentState
 from server.workflow.builder import build_workflow
@@ -58,7 +57,8 @@ def handle_chat(request:Dict):
         intent=None
     )
     result = workflow.invoke(initial_state)
-    logger.info(f"Result: {result}")
+    result_wrapper = result
+    logger.info(f"Result: {result_wrapper}")
     return result["final_answer"]
 
 @app.post("/execute", response_model=List[ExecuteResponse])

@@ -1,4 +1,3 @@
-# server/workflow/builder.py
 from langgraph.graph import StateGraph, END
 from server.workflow.state import AgentState
 from server.workflow.nodes.receive import receive
@@ -7,10 +6,12 @@ from server.workflow.nodes.generate import generate
 from server.workflow.nodes.execute import execute
 from server.workflow.nodes.analyze import analyze
 
-
 def build_workflow() -> StateGraph:
-    """LangGraph 워크플로우 빌더: 4개 노드와 엣지 정의."""
-    workflow = StateGraph(AgentState)
+    """LangGraph 워크플로우 빌더: 노드와 엣지 정의."""
+    # 상태 그래프 생성
+    workflow = StateGraph(
+        AgentState
+    )
 
     # 노드 추가
     workflow.add_node("receive", receive)
