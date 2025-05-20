@@ -12,7 +12,6 @@ def check_input(state: AgentState) -> Optional[Dict]:
     """chat_history와 raw_input을 통해 Y/N 승인 요청 여부 판단 및 처리."""
     logger.debug(f"Checking input: raw_input={state.get('raw_input', {})}, chat_history_len={len(state.get('chat_history', []))}")
     raw_input = state.get("raw_input", {})
-    text = raw_input.get("text", "").lower()
     chat_history = state.get("chat_history", [])
     client = get_llm()
 
@@ -51,14 +50,6 @@ def check_input(state: AgentState) -> Optional[Dict]:
         if result["action"] == "path":
             logger.debug("No Y/N request found, proceeding to receive")
             return None
-
-        # chat_history 업데이트
-        state["chat_history"] = state.get("chat_history", []) + [{
-            "role": "user",
-            "content": text,
-            "timestamp": datetime.utcnow().isoformat()
-        }]
-        logger.debug(f"Updated chat_history: {state['chat_history'][-1]}")
 
         if result["action"] == "approve":
             state["approved"] = True

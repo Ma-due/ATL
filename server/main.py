@@ -43,7 +43,8 @@ def get_commands() -> List[Dict]:
 def handle_chat(request:Dict):
     """Streamlit 사용자 입력 처리."""
     logger.info(f"Received request: {request}")
-    user_input = request.get("message")
+    user_input = request.get("user_input")
+    chat_history = request.get("chat_history")
     workflow = build_workflow()
     initial_state = AgentState(
         input_type="streamlit",
@@ -53,7 +54,7 @@ def handle_chat(request:Dict):
         approved=False,
         execution_result=None,
         final_answer=None,
-        chat_history=[],
+        chat_history=chat_history,
         intent=None
     )
     result = workflow.invoke(initial_state)
