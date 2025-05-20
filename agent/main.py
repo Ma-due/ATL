@@ -12,7 +12,7 @@ logger = setup_logger(__name__)
 app = FastAPI()
 
 
-@app.post("/execute", response_model=ExecuteResponse)
+@app.post("/execute", response_model=List[ExecuteResponse])
 def execute_command_endpoint(request: ExecuteRequest, 
                              authorization: str = Header(default="")) -> List[ExecuteResponse]:
     """
