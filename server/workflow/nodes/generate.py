@@ -8,7 +8,6 @@ logger = setup_logger(__name__)
 
 def generate(state: AgentState) -> Dict:
     """입력 유형에 따라 CloudWatch 또는 Streamlit 요청을 분석하여 커맨드 리스트, 대상 인스턴스 ID, 의도 생성."""
-    logger.info(f"generate Start state: {state}")
     input_type = state.get("input_type")
     raw_input = state.get("raw_input", {})
     approved = state.get("approved", False)
@@ -50,7 +49,7 @@ def generate(state: AgentState) -> Dict:
         )
         logger.info(f"generate response: {response.choices[0].message.content}")
         result = json.loads(response.choices[0].message.content)
-        logger.info(f"generate result: {result}")
+
         state["command"] = result["commands"]
         state["target"] = result["target"]
         state["intent"] = result["intent"]
