@@ -14,4 +14,4 @@ FASTAPI_HOST = os.getenv("FASTAPI_HOST", "localhost")
 FASTAPI_PORT = int(os.getenv("FASTAPI_PORT", 8000))
 API_TOKEN = os.getenv("API_TOKEN", "your-secret-token")
 
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "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")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
