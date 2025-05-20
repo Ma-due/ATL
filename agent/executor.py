@@ -1,10 +1,10 @@
 import subprocess
 from typing import Dict, List
-from logging import setup_logger
+from .logging import setup_logger
 
 logger = setup_logger(__name__)
 
-def execute_command(command: List[str], timeout: int = 30) -> Dict[str, str | int]:
+def execute_command(command: List[str], timeout: int = 30) -> List[Dict[str, str | int]]:
     """
     subprocess.run을 사용해 커맨드를 실행하고 결과를 반환
     Args:
@@ -14,7 +14,7 @@ def execute_command(command: List[str], timeout: int = 30) -> Dict[str, str | in
         stdout, stderr, returncode 또는 에러 메시지를 포함한 딕셔너리
     """
 
-    results: Dict[str, str | int] = []
+    results: List[Dict[str, str | int]] = []
     for cmd in command:
         logger.info(f"executor input command: {cmd}")
         try:
