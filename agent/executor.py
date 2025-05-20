@@ -29,6 +29,7 @@ def execute_command(command: List[str], timeout: int = 30) -> List[ExecuteRespon
             results.append(ExecuteResponse(
                 command=cmd,
                 stdout=result.stdout,
+                stderr=None,
                 returncode=result.returncode
             ))
 
@@ -37,13 +38,14 @@ def execute_command(command: List[str], timeout: int = 30) -> List[ExecuteRespon
             logger.info(f"executor timeout: {cmd}")
             results.append(ExecuteResponse(
                 command=cmd,
+                stdout=None,
                 stderr=f"{timeout}s timeout",
                 returncode=1
             ))
         except subprocess.SubprocessError as e:
-            logger.info(f"executor error: {cmd}")
             results.append(ExecuteResponse(
                 command=cmd,
+                stdout=None,
                 stderr=str(e),
                 returncode=1))
 
