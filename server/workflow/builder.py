@@ -1,6 +1,7 @@
 from langgraph.graph import StateGraph, END
 from server.workflow.state import AgentState
 from server.workflow.nodes.receive import receive
+from server.workflow.nodes.messages import messages
 from server.workflow.nodes.fetch import fetch
 from server.workflow.nodes.generate import generate
 from server.workflow.nodes.execute import execute

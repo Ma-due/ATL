@@ -1,9 +1,7 @@
 import subprocess
 from typing import Dict, List
-from .logging import setup_logger
 from .models.models import ExecuteResponse
 
-logger = setup_logger(__name__)
 
 def execute_command(command: List[str], timeout: int = 30) -> List[ExecuteResponse]:
     """

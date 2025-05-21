@@ -88,8 +88,8 @@ def handle_execute(request: Dict) -> List[ExecuteResponse]:
     try:
         headers = {"Authorization": f"Bearer {API_TOKEN}"}
         payload = ExecuteRequest(command=commands, agent=target)
-        logger.info(f"Sending request to {url}:9917/execute with command: {commands}")
-        response = requests.post(f"http://{url}:9917/execute", json=payload.dict(), headers=headers)
+        logger.info(f"Sending request to {url}/execute with command: {commands}")
+        response = requests.post(f"{url}/execute", json=payload.dict(), headers=headers)
         response.raise_for_status()
 
         logger.info(f"Response: {response.json()}")

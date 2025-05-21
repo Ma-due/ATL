@@ -19,7 +19,6 @@ def execute(state: AgentState) -> Dict:
     Returns:
         다음 노드와 업데이트된 상태
     """
-    logger.info(f"execute Start state: {state}")
     commands = state.get("command", [])
     target = state.get("target")
     state_update = {}
@@ -41,7 +40,7 @@ def execute(state: AgentState) -> Dict:
     try:
         agent_url = get_agent_url(target)
         payload = {"command": commands, "agent": target, "url": agent_url}
-        logger.info(f"Sending request to {FASTAPI_HOST}:{FASTAPI_PORT}/execute with payload: {payload}")
+        logger.info(f"Sending request to {agent_url}/execute with payload: {payload}")
         
         response = requests.post(
             f"http://{FASTAPI_HOST}:{FASTAPI_PORT}/execute",

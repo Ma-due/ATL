@@ -122,3 +122,4 @@ dmypy.json
 # Windows
 Thumbs.db
 ehthumbs.db 
+server/config.py

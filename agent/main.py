@@ -4,10 +4,8 @@ from .security import validate_command, verify_token
 from .config import API_TOKEN, AGENT_PORT
 import uvicorn
 from .models.models import ExecuteRequest, ExecuteResponse
-from .logging import setup_logger
 from typing import List
 
-logger = setup_logger(__name__)
 
 app = FastAPI()
 
