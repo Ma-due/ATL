@@ -3,7 +3,7 @@ from typing import Dict, List
 from .models.models import ExecuteResponse
 
 
-def execute_command(command: List[str], timeout: int = 30) -> List[ExecuteResponse]:
+def execute_command(command: List[str], timeout: int = 60) -> List[ExecuteResponse]:
     """
     subprocess.run을 사용해 커맨드를 실행하고 결과를 반환
     Args:
@@ -12,7 +12,7 @@ def execute_command(command: List[str], timeout: int = 30) -> List[ExecuteRespon
     Returns:
         stdout, stderr, returncode 또는 에러 메시지를 포함한 딕셔너리
     """
-
+    print(f"agent.executor.execute_command input command: {command}")
     results: List[ExecuteResponse] = []
     for cmd in command:
         try:
@@ -44,4 +44,5 @@ def execute_command(command: List[str], timeout: int = 30) -> List[ExecuteRespon
                 stderr=str(e),
                 returncode=1))
 
+    print(f"agent.executor.execute_command output: {results}")
     return results

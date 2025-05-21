@@ -21,6 +21,7 @@ def execute_command_endpoint(request: ExecuteRequest,
     Returns:
         실행 결과
     """
+    print(f"agent.main.execute_command_endpoint input: {request}")
     # 토큰 검증
     token = authorization.replace("Bearer ", "") if authorization.startswith("Bearer ") else ""
     if not verify_token(token, API_TOKEN):
@@ -33,6 +34,7 @@ def execute_command_endpoint(request: ExecuteRequest,
     # 커맨드 실행
     result = execute_command(request.command)
     # ExecuteResponse로 반환
+    print(f"agent.main.execute_command_endpoint output: {result}")
     return result
 
 if __name__ == "__main__":
