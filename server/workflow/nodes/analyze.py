@@ -1,63 +1,87 @@
+from typing import Dict
 from server.workflow.state import AgentState
 from server.utils.llm import get_llm
-import json
-from typing import Dict
 from server.utils.logging import setup_logger
+import json
+import re
 
 logger = setup_logger(__name__)
 
 def analyze(state: AgentState) -> Dict:
-    """실행 결과를 예쁘게 포맷팅하고 시스템 상태를 분석하여 요약."""
+    """실행 결과를 포맷팅하고 시스템 상태를 분석하여 요약."""
     logger.info(f"analyze Start state: {state}")
-    execution_result = state.get("execution_result")
-    commands = execution_result.get("commands", []) if execution_result else []
-    results = execution_result.get("results", []) if execution_result else []
+    
+    # 상태에서 필요한 데이터 추출
+    execution_result = state.get("execution_result", [])
     target = state.get("target")
     input_type = state.get("input_type")
     intent = state.get("intent")
     approved = state.get("approved")
+    
+    # 디버깅: execution_result 구조 확인
+    logger.debug(f"execution_result: {execution_result}")
 
-    # 상태 업데이트 딕셔너리
-    state_update = {}
-
-    if not execution_result or not results:
-        state["final_answer"] = {"response": "분석할 실행 결과가 없음"}
-        state_update["final_answer"] = state["final_answer"]
+    # 실행 결과가 없는 경우
+    if not execution_result:
+        state["final_answer"] = "분석할 실행 결과가 없음"
         logger.info(f"analyze end state: {state}")
-        return {**state_update, "next": "end"}
+        return state
 
+    # 명령어 추출
+    commands = state.get("command", [])
+    logger.debug(f"Extracted commands: {commands}")
+
+    # LLM 호출로 단일 응답 생성
     client = get_llm()
     prompt = f"""
-    다음 정보를 기반으로 실행 결과를 예쁘게 포맷팅하고 시스템 상태를 요약하세요.
-    만약 approved 값이 False이면, 실행에 대한 여부를 승인받으세요:
-
-    커맨드: {json.dumps(commands)}
-    의도: {intent}
-    실행 결과: {json.dumps(execution_result)}
-    대상 인스턴스: {target}
-    입력 유형: {input_type}
-    사용자 승인: {approved}
-    - 결과를 읽기 쉽게 정리 (예: 커맨드별 출력, 성공/실패 상태, 의도 포함).
-    - 시스템 상태 요약 (예: CPU 사용량, 디스크 상태, 문제 여부).
-    - approved가 False이면 summary 마지막 줄에 "실행하시겠습니까? (Y/N)" 포함.
-    반환: {{"formatted_output": "정리된 결과", "summary": "상태 요약"}}
+    다음 정보를 기반으로 실행 결과를 포맷팅하고 시스템 상태를 요약하여 단일 응답으로 제공하세요:
+    - 커맨드: {json.dumps(commands, ensure_ascii=False)}
+    - 실행 결과: {json.dumps(execution_result, ensure_ascii=False)}
+    - 의도: {intent}
+    - 대상 인스턴스: {target}
+    - 입력 유형: {input_type}
+    - 지침:
+      - 실행 결과와 시스템 상태를 하나의 깔끔한 문자열로 통합.
+      - 형식 예시:
+        실행 결과:
+        명령어: ps aux --sort=-%cpu | head -n 10
+        상태: 성공
+        출력: USER PID %CPU...
+        명령어: sar 1 5
+        상태: 성공
+        출력: Linux 6.1...
+        시스템 상태: CPU 사용량 0.19%, 디스크 정상, 문제 없음.
+      - **반드시 유효한 JSON 형식으로만 반환** (예: {{"response": "통합된 응답"}}).
+      - Markdown (예: ```json), 코드 블록, 추가 텍스트 절대 포함 금지.
+    반환: {{"response": "통합된 응답"}}
     """
-
+    
     try:
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[{"role": "user", "content": prompt}]
+            model="gpt-4o",
+            messages=[{"role": "user", "content": prompt}],
+            response_format={"type": "json_object"}
         )
-        result = json.loads(response.choices[0].message.content)
-        state["final_answer"] = {
-            "response": f"{result['formatted_output']}\n\n요약: {result['summary']}"
-        }
-        state_update["final_answer"] = state["final_answer"]
-        logger.info(f"analyze end state: {state}")
-        return {**state_update, "next": "end"}
+        content = response.choices[0].message.content
+        logger.debug(f"LLM raw response: {content}")
+        
+        # Markdown 코드 블록 제거 (안전장치)
+        content = re.sub(r'```json\n|\n```', '', content).strip()
+        result = json.loads(content)
+        
+        # final_answer를 문자열로 설정
+        state["final_answer"] = result["response"]
+        logger.info(f"-----------------------------------------------------------")
+        logger.info(f"analyze end state: {state['final_answer']}")
+        logger.info(f"-----------------------------------------------------------")
+
+        if not approved:
+            state["final_answer"] += "\n커맨드를 실행하시겠습니까? (Y/N)"
+
+        return state
+    
     except Exception as e:
-        state["final_answer"] = {"response": f"분석 실패: {str(e)}"}
-        state_update["final_answer"] = state["final_answer"]
         logger.error(f"analyze failed: {str(e)}")
+        state["final_answer"] = f"분석 실패: {str(e)}"
         logger.info(f"analyze end state: {state}")
-        return {**state_update, "next": "end"}
+        return state
