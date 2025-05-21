@@ -15,7 +15,6 @@ def execute_command(command: List[str], timeout: int = 30) -> List[ExecuteRespon
 
     results: List[ExecuteResponse] = []
     for cmd in command:
-        logger.info(f"executor input command: {cmd}")
         try:
             result = subprocess.run(
                 cmd,
@@ -31,9 +30,7 @@ def execute_command(command: List[str], timeout: int = 30) -> List[ExecuteRespon
                 returncode=result.returncode
             ))
 
-            logger.info(f"executor output: {result.stdout}, return code:{result.returncode}")
         except subprocess.TimeoutExpired:
-            logger.info(f"executor timeout: {cmd}")
             results.append(ExecuteResponse(
                 command=cmd,
                 stdout=None,
