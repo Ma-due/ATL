@@ -31,6 +31,7 @@ def build_workflow() -> StateGraph:
         {
             "fetch": "fetch",
             "generate": "generate",
+            "execute": "execute",
             "end": END
         }
     )
@@ -43,6 +44,7 @@ def build_workflow() -> StateGraph:
         lambda state: state.get("next", END),
         {
             "execute": "execute",
+            "analyze": "analyze",
             "end": END
         }
     )

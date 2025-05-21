@@ -3,87 +3,83 @@ from server.utils.llm import get_llm
 from server.utils.logging import setup_logger
 import json
 from typing import Dict, Optional
-from datetime import datetime
 
 logger = setup_logger("receive")
 
 def check_input(state: AgentState) -> Optional[Dict]:
-    """chat_history와 raw_input을 통해 Y/N 승인 요청 여부 판단 및 처리."""
+    """chat_history에서 commands, target, intent를 추출하고 Y/N 입력에 따라 분기 처리."""
     logger.debug(f"Checking input: raw_input={state.get('raw_input', {})}, chat_history_len={len(state.get('chat_history', []))}")
     raw_input = state.get("raw_input", {})
     chat_history = state.get("chat_history", [])
+    user_input = raw_input.get("user_input", "").strip().upper()
     client = get_llm()
 
+    # chat_history가 비어 있으면 오류 처리
+    if not chat_history:
+        logger.error("No chat history available")
+        return {"action": "reject", "commands": [], "target": None, "final_answer": "대화 기록이 없어 처리할 수 없습니다.", "next": "end"}
+
+    # 가장 최근 대화 기록
+    last_message = chat_history[-1]["assistant"]["content"]
+
+    # LLM 프롬프트로 속성 추출
     prompt = f"""
-    다음 대화 기록과 입력을 분석하여 사용자가 커맨드 실행을 승인해야 하는 Y/N 요청이 있는지 확인:
-    대화 기록: {json.dumps(chat_history[-5:], ensure_ascii=False)}
-    입력: {json.dumps(raw_input, ensure_ascii=False)}
-    - 대화 기록에 "실행하시겠습니까? (Y/N)" 또는 유사한 문구가 포함된 경우:
-      - 입력이 "Y"이면 action을 "approve"로 설정.
-      - 입력이 "N"이면 action을 "reject"로 설정.
-      - 관련 커맨드, 의도, 타겟을 대화 기록에서 복원.
-    - Y/N 요청이 없으면 action을 "path"로 설정, commands, intent, target은 빈 값([] 또는 null) 반환.
-    - 출력은 반드시 아래 JSON 형식을 엄격히 준수:
-    {{
-      "action": "approve" | "reject" | "path",
-      "commands": ["cmd1", ...] 또는 [],
-      "intent": "의도 설명" 또는 null,
-      "target": "i-123" 또는 null
-    }}
+        다음 마크다운 형식의 대화 기록 내용을 분석하여 요청된 속성을 추출하세요:
+        
+        [대화 기록 내용]
+        {last_message}
+        
+        [지침]
+        - 마크다운 문자열에서 다음 속성을 추출:
+          - commands: "## 실행된 명령어" 또는 "## 추천 커맨드" 섹션의 커맨드 리스트 (예: "- `cmd`" → ["cmd"]). 없으면 빈 리스트([]).
+          - target: "**명령이 실행된 인스턴스**: `...`" 또는 "**인스턴스**: `...`"의 값. "None"이면 null, 없으면 null.
+          - intent: "**생성 의도** 또는 **분석**: ..."의 값. 없으면 null.
+        - 출력은 반드시 순수 JSON 객체로, ```json, ```, 마크다운, 주석, 추가 텍스트를 절대 포함시키지 마세요.
+        - 출력 형식:
+        {{
+          "commands": ["cmd1", "cmd2", ...] 또는 [],
+          "target": "i-123" 또는 null,
+          "intent": "의도 설명" 또는 null
+        }}
     """
 
     try:
         response = client.chat.completions.create(
             model="gpt-4o-mini",
-            messages=[{"role": "user", "content": prompt}]
+            messages=[{"role": "user", "content": prompt}],
+            response_format={"type": "json_object"}
         )
-        
         content = response.choices[0].message.content.strip()
-        try:
-            result = json.loads(content)
-        except json.JSONDecodeError:
-            logger.warning(f"LLM returned non-JSON response: {content}")
-            result = {"action": "path"}
-            
+        result = json.loads(content)
         logger.debug(f"LLM response: {result}")
 
-        valid_actions = ["approve", "reject", "path"]
-        if result.get("action") not in valid_actions:
-            logger.error(f"Invalid LLM action: {result.get('action')}, expected {valid_actions}")
-            return {"next": "end"}
+        # 속성 추출
+        commands = result.get("commands", [])
+        target = result.get("target", None)
+        intent = result.get("intent", None)
 
-        if result["action"] == "path":
-            logger.debug("No Y/N request found, proceeding to receive")
-            return None
+        logger.info(f"추출 확인: result={result}")
+        # 입력 검증
+        if user_input not in ["Y", "N"]:
+            return {"action": "reject", "commands": [], "target": None, "final_answer": "잘못된 입력입니다. 'Y' 또는 'N'을 입력해주세요.", "next": "end"}
 
-        state_update = {}
-        if result["action"] == "approve":
-            state["approved"] = True
-            state["command"] = result["commands"]
-            state["target"] = result["target"]
-            state["intent"] = result["intent"]
-            state_update = {
-                "approved": state["approved"],
-                "command": state["command"],
-                "target": state["target"],
-                "intent": state["intent"]
-            }
-            logger.info(f"Y input received, approved commands: {result['commands']}")
+        # 분기 처리
+        state_update = {
+            "approved": False,
+            "command": commands,
+            "target": target,
+            "intent": intent
+        }
+        if user_input == "Y":
+            state_update["approved"] = True
             return {**state_update, "next": "execute"}
-        else:  # action == "reject"
-            state["approved"] = False
-            state["intent"] = "사용자의 커맨드 실행 거절"
-            state_update = {
-                "approved": state["approved"],
-                "intent": state["intent"]
-            }
-            logger.info(f"N input received, commands rejected: {result['commands']}")
+        else:  # user_input == "N"
+            state_update["final_answer"] = "사용자가 커맨드 실행을 거절하셨습니다. 추가적인 도움이 필요하신가요?"
             return {**state_update, "next": "end"}
 
     except Exception as e:
-        logger.error(f"LLM processing failed: {str(e)}", exc_info=True)
-        state_update = {}
-        return {**state_update, "next": "end"}
+        logger.error(f"LLM processing failed: {str(e)}")
+        return {"action": "reject", "commands": [], "target": None, "final_answer": f"처리 중 오류 발생: {str(e)}", "next": "end"}
 
 def receive(state: AgentState) -> Dict:
     """LLM이 bind_tools를 사용하여 Streamlit 입력의 요청 유형을 결정."""
@@ -91,6 +87,7 @@ def receive(state: AgentState) -> Dict:
     input_type = state.get("input_type")
     raw_input = state.get("raw_input", {})
     user_input = raw_input.get("user_input", "")
+    user_question = state.get("user_question", False)
     state_update = {}
 
     if input_type not in ["cloudwatch", "streamlit"]:
@@ -103,11 +100,9 @@ def receive(state: AgentState) -> Dict:
         state_update["next"] = "generate"
         return {**state_update, "next": "generate"}
 
-    # Y/N 입력 확인
-    result = check_input(state)
-    if result:
-        return result
-
+    if user_question:
+        return check_input(state)
+    
     client = get_llm()
     prompt = f"""
         사용자 입력의 요청 유형을 결정:

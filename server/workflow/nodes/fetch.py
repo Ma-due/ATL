@@ -16,8 +16,9 @@ def fetch(state: AgentState) -> Dict:
         response = requests.get(f"http://{FASTAPI_HOST}:{FASTAPI_PORT}/commands")
         logger.info(f"fetch response: {response.json()}")
         response.raise_for_status()
-        messages = response.json()[-5:]  # 최근 5개
-        state["final_answer"] = {"response": f"cloudwatch_messages: {json.dumps(messages)}"}
+        messages = response.json()[-1:]  # 최근 1개
+        return {**messages[0], "next": "end"}
+    
     except requests.RequestException as e:
         state["final_answer"] = {"response": f"조회 실패: {str(e)}"}
 

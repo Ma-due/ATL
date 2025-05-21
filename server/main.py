@@ -10,7 +10,7 @@ from server.utils.logging import setup_logger
 app = FastAPI()
 cloudwatch_messages: List[Dict] = []
 logger = setup_logger(__name__)
-
+last_question_bool = False
 
 def sqs_trigger(alarm: Alarm):
     """CloudWatch SQS 메시지 처리."""
@@ -24,7 +24,8 @@ def sqs_trigger(alarm: Alarm):
         execution_result=None,
         final_answer=None,
         chat_history=[],
-        intent=None
+        intent=None,
+        user_question=False
     )
     
     cloudwatch_messages.append(workflow.invoke(initial_state))
@@ -41,6 +42,7 @@ def get_commands() -> List[Dict]:
 @app.post("/chat")
 def handle_chat(request:Dict):
     """Streamlit 사용자 입력 처리."""
+    global last_question_bool
     logger.info(f"Received request: {request}")
     user_input = request.get("user_input")
     chat_history = request.get("chat_history")
@@ -54,11 +56,15 @@ def handle_chat(request:Dict):
         execution_result=None,
         final_answer=None,
         chat_history=chat_history,
-        intent=None
+        intent=None,
+        user_question=last_question_bool
     )
     result = workflow.invoke(initial_state)
-    result_wrapper = result
-    logger.info(f"Result: {result_wrapper}")
+    if not last_question_bool and result["user_question"]:
+        last_question_bool = True
+    elif result["user_question"] and last_question_bool:
+        last_question_bool = False
+
     return result["final_answer"]
 
 @app.post("/execute", response_model=List[ExecuteResponse])

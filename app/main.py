@@ -30,7 +30,7 @@ if user_question := st.chat_input(placeholder="질문 내용 입력"):
 
         # AI 응답 표시
         with st.chat_message("ai"):
-            st.write(ai_message)
+            st.markdown(ai_message)
 
         # session_history에 딕셔너리 형태로 추가
         st.session_state.session_history.append(

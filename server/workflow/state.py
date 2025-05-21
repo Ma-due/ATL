@@ -11,3 +11,4 @@ class AgentState(TypedDict):
     final_answer: Optional[Dict] # 최종 User 리턴 메시지
     chat_history: List[Dict] # 현재 워크플로우의 채팅 히스토리
     intent: Optional[str] # 커맨드 생성 의도
+    user_question: Optional[str] # 사용자 질문
