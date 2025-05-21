@@ -1,16 +1,17 @@
 from typing import List
 
-ALLOWED_COMMANDS: List[str] = ["top", "df -h", "ps aux", "free -m"]
+# 블랙리스트: 차단할 명령어 키워드
+BLOCKED_COMMANDS: List[str] = ["rm", "reboot", "kill", "dd"]
 
 def validate_command(command: str) -> bool:
     """
-    커맨드가 화이트리스트에 포함되는지 검증
+    커맨드가 블랙리스트에 포함된 키워드를 포함하지 않는지 검증
     Args:
         command: 검증할 커맨드
     Returns:
-        허용 여부
+        허용 여부 (블랙리스트 키워드 미포함 시 True)
     """
-    return any(allowed in command for allowed in ALLOWED_COMMANDS)
+    return not any(blocked in command for blocked in BLOCKED_COMMANDS)
 
 def verify_token(token: str, expected_token: str) -> bool:
     """
