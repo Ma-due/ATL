@@ -49,6 +49,15 @@
     - 생성된 커맨드를 실행하고 결과를 수합해 `analyze` 노드로 이동
     - 별도의 티켓 저장소에 저장
 
+## 시나리오 기반 시연
+<div style="overflow-x: auto; white-space: nowrap; padding: 10px;">
+  <img src="[https://hackmd.io/_Uploads/rJp_5U2blg.png" alt="CloudWatch Alert](https://github.com/user-attachments/assets/7316c5e9-03d7-4bb7-bd32-5c95908ebbfb)" style="width: 300px; height: auto; display: inline-block; margin-right: 10px;"> <!-- 알람 발생 -->
+  <img src="[https://hackmd.io/_Uploads/rJwF58nbxe.png" alt="Workflow Trigger](https://github.com/user-attachments/assets/7316c5e9-03d7-4bb7-bd32-5c95908ebbfb)" style="width: 300px; height: auto; display: inline-block; margin-right: 10px;"> <!-- 워크플로우 트리거 -->
+  <img src="[https://via.placeholder.com/300x200](https://github.com/user-attachments/assets/7316c5e9-03d7-4bb7-bd32-5c95908ebbfb)" alt="Streamlit Chat" style="width: 300px; height: auto; display: inline-block; margin-right: 10px;"> <!-- Streamlit 채팅 -->
+  <img src="[https://via.placeholder.com/300x200](https://github.com/user-attachments/assets/7316c5e9-03d7-4bb7-bd32-5c95908ebbfb)" alt="Command Execution" style="width: 300px; height: auto; display: inline-block; margin-right: 10px;"> <!-- 커맨드 실행 -->
+  <img src="[https://via.placeholder.com/300x200](https://github.com/user-attachments/assets/7316c5e9-03d7-4bb7-bd32-5c95908ebbfb)" alt="Analysis Report" style="width: 300px; height: auto; display: inline-block; margin-right: 10px;"> <!-- 분석 보고서 -->
+  <img src="[https://via.placeholder.com/300x200](https://github.com/user-attachments/assets/7316c5e9-03d7-4bb7-bd32-5c95908ebbfb)" alt="Ticket Storage" style="width: 300px; height: auto; display: inline-block; margin-right: 10px;"> <!-- 티켓 저장 -->
+</div>
 ## 파일 구조 및 기능
 ```
 ATL/
