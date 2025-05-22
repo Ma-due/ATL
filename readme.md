@@ -1,8 +1,3 @@
----
-title: ATL 프로젝트
-
----
-
 # AI BOOTCAMP 2기 프로젝트
 
 ## 프로젝트 기획 의도
@@ -13,7 +8,7 @@ title: ATL 프로젝트
 - **사용 사례**: 서버 상태 모니터링, 알람 기반 워크플로우 자동화.
 
 ## 시스템 아키텍처
-![아키텍처](https://hackmd.io/_uploads/rJp_5U2blg.png)
+![아키텍처](https://github.com/user-attachments/assets/39420dc1-02f8-480c-b51d-1f922a6334a0)
 
 - **CloudWatch, SNS, SQS**
     - 시스템 모니터링 및 전파 체계를 갈음
@@ -30,7 +25,8 @@ title: ATL 프로젝트
 
 ## Langgraph 아키텍처
 ### Langgraph 아키텍처
-![Langgraph진행](https://hackmd.io/_uploads/rJwF58nbxe.png)
+![Langgraph진행](https://github.com/user-attachments/assets/7316c5e9-03d7-4bb7-bd32-5c95908ebbfb)
+
  - **Node 리스트**
     - receive : 사용자의 입력을 수신하여 이전 대화를 분석하여 전처리하고, 다음 진행 노드 분기 처리
     - generate : 사용자/Cloudwatch Alarm 메시지 기반 시스템 분석을 위한 Linux Command 생성
