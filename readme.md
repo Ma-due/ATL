@@ -23,10 +23,9 @@
     -  실 서버에 배포 될 Linux Command 실행 가능한 Agent
     -  시간 제약 및 개발 편의성으로 인해 FastAPI를 통한 HTTP 통신으로 Command 수신
 
-## Langgraph 아키텍처
+## Langgraph 아키텍처 및 Input 인입점에 따른 노드 진행
 ### Langgraph 아키텍처
 ![Langgraph진행](https://github.com/user-attachments/assets/7316c5e9-03d7-4bb7-bd32-5c95908ebbfb)
-
  - **Node 리스트**
     - receive : 사용자의 입력을 수신하여 이전 대화를 분석하여 전처리하고, 다음 진행 노드 분기 처리
     - generate : 사용자/Cloudwatch Alarm 메시지 기반 시스템 분석을 위한 Linux Command 생성
@@ -34,12 +33,21 @@
     - analyze : Command 수행 결과 기반 시스템 분석 및 요약
     - fetch : Streamlit 채팅 기반 시스템 전환으로 인해 사용자가 채팅을 통해 생성된 티켓(Cloudwatch Alarm 메시지)를 조회
 
-## 시나리오 기반 시연
-## 프로젝트 제약 사항 및 보안점
-- **권한 관리**: MySQL 사용자(`tqms_user`)의 `db` 접근 권한 부족 문제 (`access denied` 오류).
-- **렌더링**: Mermaid 다이어그램 PNG 생성 시 `pyppeteer` 의존성, `mmdc` 설치 문제.
-- **내부망**: 외부 로그 전송 제한, 안전한 커맨드(`top`, `free`) 사용 필요.
-- **협업**: README 수정의 번거로움, 온라인 마크다운 편집기(HackMD) 사용 권장.
+### Input 인입점에 따른 노드 진행
+- Streamlit(사용자 요청)
+    - 사용자의 채팅을 Source 데이터로 사용 -> `receive` 노드로 진행
+    - `receive` 노드에서 사용자의 질문을 분석(알람 티켓 조회, Command 생성 요청, 생성된 커맨드에 대한 실행 승인 여부) 하여 적절한 노드로 라우팅
+    - 알람 티켓 조회 -> `fetch` 노드로 이동, 생성되어 있는 알람 티켓에 대한 정보 표시
+    - Command 생성 요청 -> `generate` 노드가 사용자가 요청한 의도를 달성할 수 있는 적절한 Linux Command를 생성
+    - 실행 승인 여부 -> (Y) : 실행 / (N) : 중단
+    - Graph의 진행 상황에 따라 적절한 답변을 `analyze` 노드에서 생성
+
+- Cloudwatch(특정 조건 트리거 기반)
+    - Alarm 시스템에서 Alarm 메시지를 Source 데이터로 사용 -> `receive` 노드로 이동
+    - Alarm 메시지는 독립적이며 항상 최초의 메시지기 때문에 `generate` 노드로 이동
+    - 현재 받은 메시지 기반 서버의 상태를 분석하기 위한 Command를 조회, 단순 조회성 Command만 생성하므로 최초 1회 -> `execute` 노드로 이동
+    - 생성된 커맨드를 실행하고 결과를 수합해 `analyze` 노드로 이동
+    - 별도의 티켓 저장소에 저장
 
 ## 파일 구조 및 기능
 ```
