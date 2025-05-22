@@ -23,15 +23,15 @@
     -  실 서버에 배포 될 Linux Command 실행 가능한 Agent
     -  시간 제약 및 개발 편의성으로 인해 FastAPI를 통한 HTTP 통신으로 Command 수신
 
-## Langgraph 아키텍처 및 Input 인입점에 따른 노드 진행
+## Langgraph Workflow
 ### Langgraph 아키텍처
 ![Langgraph진행](https://github.com/user-attachments/assets/7316c5e9-03d7-4bb7-bd32-5c95908ebbfb)
  - **Node 리스트**
-    - receive : 사용자의 입력을 수신하여 이전 대화를 분석하여 전처리하고, 다음 진행 노드 분기 처리
-    - generate : 사용자/Cloudwatch Alarm 메시지 기반 시스템 분석을 위한 Linux Command 생성
-    - execute : 사용자의 실행 여부에 따라 대상 서버에 Command 실행 명령
-    - analyze : Command 수행 결과 기반 시스템 분석 및 요약
-    - fetch : Streamlit 채팅 기반 시스템 전환으로 인해 사용자가 채팅을 통해 생성된 티켓(Cloudwatch Alarm 메시지)를 조회
+    - `receive` : 사용자의 입력을 수신하여 이전 대화를 분석하여 전처리하고, 다음 진행 노드 분기 처리
+    - `generate` : 사용자/Cloudwatch Alarm 메시지 기반 시스템 분석을 위한 Linux Command 생성
+    - `execute` : 사용자의 실행 여부에 따라 대상 서버에 Command 실행 명령
+    - `analyze` : Command 수행 결과 기반 시스템 분석 및 요약
+    - `fetch` : Streamlit 채팅 기반 시스템 전환으로 인해 사용자가 채팅을 통해 생성된 티켓(Cloudwatch Alarm 메시지)를 조회
 
 ### Input 인입점에 따른 노드 진행
 - Streamlit(사용자 요청)
