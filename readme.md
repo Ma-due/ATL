@@ -51,7 +51,7 @@
 
 ## 시나리오 기반 시연
 <div style="overflow-x: auto; white-space: nowrap; padding: 10px;">
-  <img src="https://github.com/user-attachments/assets/7316c5e9-03d7-4bb7-bd32-5c95908ebbfb" alt="Workflow Trigger" style="width: 300px; height: auto; display: inline-block; margin-right: 10px;"> <!-- 워크플로우 트리거 -->
+  <img src="https://github.com/user-attachments/assets/7316c5e9-03d7-4bb7-bd32-5c95908ebbfb" alt="Workflow Trigger" style="width: auto; height: auto; display: inline-block; margin-right: 10px;"> <!-- 워크플로우 트리거 -->
   <img src="https://github.com/user-attachments/assets/7316c5e9-03d7-4bb7-bd32-5c95908ebbfb" alt="Workflow Trigger" style="width: 300px; height: auto; display: inline-block; margin-right: 10px;"> <!-- 워크플로우 트리거 -->
   <img src="https://github.com/user-attachments/assets/7316c5e9-03d7-4bb7-bd32-5c95908ebbfb" alt="Workflow Trigger" style="width: 300px; height: auto; display: inline-block; margin-right: 10px;"> <!-- 워크플로우 트리거 -->
   <img src="https://github.com/user-attachments/assets/7316c5e9-03d7-4bb7-bd32-5c95908ebbfb" alt="Workflow Trigger" style="width: 300px; height: auto; display: inline-block; margin-right: 10px;"> <!-- 워크플로우 트리거 -->
