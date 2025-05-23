@@ -50,7 +50,7 @@
     - 별도의 티켓 저장소에 저장
 
 ## 시나리오 기반 시연
-![추가분석](https://github.com/user-attachments/assets/79f9b2d7-ab52-4dcf-86db-193fe1ee3e77)
+[시나리오시연.pptx](https://github.com/user-attachments/files/20404228/default.pptx)
 
 
 ## 파일 구조 및 기능
