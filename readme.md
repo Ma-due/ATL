@@ -50,16 +50,8 @@
     - 별도의 티켓 저장소에 저장
 
 ## 시나리오 기반 시연
-<table>
-  <tr>
-    <td><img src="https://github.com/user-attachments/assets/7316c5e9-03d7-4bb7-bd32-5c95908ebbfb" alt="Workflow Trigger" width="300"></td> <!-- 워크플로우 트리거 -->
-    <td><img src="https://github.com/user-attachments/assets/7316c5e9-03d7-4bb7-bd32-5c95908ebbfb" alt="Workflow Trigger" width="300"></td> <!-- 워크플로우 트리거 -->
-    <td><img src="https://github.com/user-attachments/assets/7316c5e9-03d7-4bb7-bd32-5c95908ebbfb" alt="Workflow Trigger" width="300"></td> <!-- 워크플로우 트리거 -->
-    <td><img src="https://github.com/user-attachments/assets/7316c5e9-03d7-4bb7-bd32-5c95908ebbfb" alt="Workflow Trigger" width="300"></td> <!-- 워크플로우 트리거 -->
-    <td><img src="https://github.com/user-attachments/assets/7316c5e9-03d7-4bb7-bd32-5c95908ebbfb" alt="Workflow Trigger" width="300"></td> <!-- 워크플로우 트리거 -->
-    <td><img src="https://hackmd.io/_Uploads/rJp_5U2blg.png" alt="CloudWatch Alert" width="300"></td> <!-- 알람 발생 -->
-  </tr>
-</table>
+![추가분석](https://github.com/user-attachments/assets/79f9b2d7-ab52-4dcf-86db-193fe1ee3e77)
+
 
 ## 파일 구조 및 기능
 ```
